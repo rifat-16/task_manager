@@ -21,7 +21,6 @@ class _InprogressTaskScreenState extends State<InProgressTaskScreen> {
           return TaskCard(status: 'In Progress', color: Colors.orange,);
         }
       ),
-
     );
   }
 }

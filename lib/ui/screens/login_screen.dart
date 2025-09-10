@@ -4,7 +4,6 @@ import 'package:task_manger/ui/screens/singup_screen.dart';
 import '../widgets/screen_background.dart';
 import 'forgot_password_email_verify_screen.dart';
 import 'main_nav_ber_holder_screen.dart';
-import 'new_task_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

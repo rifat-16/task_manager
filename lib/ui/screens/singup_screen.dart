@@ -103,6 +103,15 @@ class _SingupScreenState extends State<SingupScreen> {
     Navigator.pop(context);
   }
 
+  @override
+  void dispose() {
+    _emailTEController.dispose();
+    _passwordTEController.dispose();
+    _fastNameTEController.dispose();
+    _lastNameTEController.dispose();
+    _phoneNumberTEController.dispose();
+    super.dispose();
+  }
 
 
 }

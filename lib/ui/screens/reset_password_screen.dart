@@ -91,6 +91,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         ),
       ),
     );
+
   }
 
   void _opTabLoginTextButton() {
@@ -102,4 +103,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   void _onTabFilledButton() {}
+
+
+  @override
+  void dispose() {
+    _newPassTEController.dispose();
+    _confirmPassTEController.dispose();
+    super.dispose();
+  }
 }
