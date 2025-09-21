@@ -1,7 +1,11 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:task_manger/ui/screens/singup_screen.dart';
+import 'package:task_manger/data/services/api_caller.dart';
+import 'package:task_manger/data/utils/urls.dart';
+import 'package:task_manger/ui/screens/sing_up_screen.dart';
+import 'package:task_manger/ui/widgets/centered_progress_indicator.dart';
 import '../widgets/screen_background.dart';
+import '../widgets/snack_bar_message.dart';
 import 'forgot_password_email_verify_screen.dart';
 import 'main_nav_ber_holder_screen.dart';
 
@@ -16,6 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailTEController = TextEditingController();
   final _passwordTEController = TextEditingController();
+  bool _loginInProgress = false;
 
   @override
   Widget build(BuildContext context) {
@@ -36,19 +41,36 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   SizedBox(height: 20),
                   TextFormField(
+                    keyboardType: TextInputType.emailAddress,
                     controller: _emailTEController,
                     decoration: InputDecoration(hintText: 'Email'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty || !value.contains('@gmail.com')) {
+                        return 'Email is required';
+                      }
+                      return null;
+                    },
                   ),
                   SizedBox(height: 15),
                   TextFormField(
                     controller: _passwordTEController,
                     obscureText: true,
                     decoration: InputDecoration(hintText: 'Password'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty || value.length < 6) {
+                        return 'Password is required';
+                      }
+                      return null;
+                    },
                   ),
                   SizedBox(height: 20),
-                  FilledButton(
-                    onPressed: _onTabFilledButton,
-                    child: Icon(Icons.arrow_circle_right_outlined),
+                  Visibility(
+                    visible: _loginInProgress == false,
+                    replacement: CenteredProgressIndicator(),
+                    child: FilledButton(
+                      onPressed: _onTabFilledButton,
+                      child: Icon(Icons.arrow_circle_right_outlined),
+                    ),
                   ),
                   SizedBox(height: 20),
                   Center(
@@ -103,11 +125,38 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _onTabFilledButton() {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (__) => MainNavBerHolderScreen()),
-      (route) => false,
+    if (_formKey.currentState!.validate()) {
+      _login();
+    }
+  }
+
+  Future<void> _login() async {
+    setState(() {
+      _loginInProgress = true;
+    });
+    Map<String, dynamic> body = {
+      "email": _emailTEController.text,
+      "password": _passwordTEController.text,
+    };
+    final ApiResponse response = await ApiCaller.postRequest(
+      url: Urls.loginUrl,
+      body: body,
     );
+    setState(() {
+      _loginInProgress = false;
+    });
+    if (response.isSuccess) {
+      showSnackBarMessage(context, 'Login Success', false);
+      Future.delayed(Duration(seconds: 1), () {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (__) => MainNavBerHolderScreen()),
+              (route) => false,
+        );
+      });
+    } else {
+      showSnackBarMessage(context, response.errorMessage!, true);
+    }
   }
 
   @override
