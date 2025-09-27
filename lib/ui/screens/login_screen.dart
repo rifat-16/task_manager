@@ -4,6 +4,8 @@ import 'package:task_manger/data/services/api_caller.dart';
 import 'package:task_manger/data/utils/urls.dart';
 import 'package:task_manger/ui/screens/sing_up_screen.dart';
 import 'package:task_manger/ui/widgets/centered_progress_indicator.dart';
+import '../../data/models/user_model.dart';
+import '../controller/auth_cotroller.dart';
 import '../widgets/screen_background.dart';
 import '../widgets/snack_bar_message.dart';
 import 'forgot_password_email_verify_screen.dart';
@@ -145,7 +147,12 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _loginInProgress = false;
     });
-    if (response.isSuccess) {
+    if (response.isSuccess && response.responseData['status'] == 'success') {
+      UserModel userModel = UserModel.fromJson(response.responseData['data']);
+      String accessToken = response.responseData['token'];
+
+      await AuthController.saveUserData(userModel, accessToken);
+
       showSnackBarMessage(context, 'Login Success', false);
       Future.delayed(Duration(seconds: 1), () {
         Navigator.pushAndRemoveUntil(

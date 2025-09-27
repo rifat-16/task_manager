@@ -1,22 +1,29 @@
 import 'package:flutter/material.dart';
 
+import '../controller/auth_cotroller.dart';
+import '../screens/login_screen.dart';
 import '../screens/update_profile_screen.dart';
 
-class TmAppBar extends StatelessWidget implements PreferredSizeWidget {
+class TmAppBar extends StatefulWidget implements PreferredSizeWidget {
   const TmAppBar({super.key, this.fromUpdateProfile});
 
   final bool? fromUpdateProfile;
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+  State<TmAppBar> createState() => _TmAppBarState();
 
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
+class _TmAppBarState extends State<TmAppBar> {
   @override
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.green,
       title: GestureDetector(
         onTap: (){
-          if(fromUpdateProfile == true){
+          if(widget.fromUpdateProfile == true){
             return;
           }
           Navigator.push(context, MaterialPageRoute(builder: (context)=> UpdateProfileScreen()));
@@ -29,10 +36,10 @@ class TmAppBar extends StatelessWidget implements PreferredSizeWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Rifat hasan',
+                  Text(AuthController.userModel?.fullName?? '',
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
-                  Text('mirefat82@gmail.com',
+                  Text(AuthController.userModel?.email?? '',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ],
@@ -40,6 +47,17 @@ class TmAppBar extends StatelessWidget implements PreferredSizeWidget {
             ]
         ),
       ),
+      actions: [IconButton(onPressed: _onTabLogoutButton, icon: Icon(Icons.logout_outlined))],
     );
+  }
+
+  Future<void> _onTabLogoutButton() async {
+    await AuthController.clearUserData();
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (__) => LoginScreen()),
+      (route) => false,
+    );
+
   }
 }

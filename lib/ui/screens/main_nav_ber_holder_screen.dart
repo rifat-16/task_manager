@@ -32,7 +32,6 @@ class _MainNavBerHolderScreenState extends State<MainNavBerHolderScreen> {
           height: 60,
           backgroundColor: Colors.white,
           elevation: 0,
-          labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
           selectedIndex: _selectedIndex,
           onDestinationSelected: (int index){
             setState(() {
