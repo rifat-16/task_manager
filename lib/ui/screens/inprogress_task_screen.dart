@@ -18,7 +18,7 @@ class _InprogressTaskScreenState extends State<InProgressTaskScreen> {
       body: ListView.builder(
         itemCount: 10,
         itemBuilder: (context, index){
-          return TaskCard(status: 'In Progress', color: Colors.orange,);
+          return;
         }
       ),
     );

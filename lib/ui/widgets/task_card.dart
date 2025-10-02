@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
 class TaskCard extends StatelessWidget {
-   TaskCard({super.key, required this.status, required this.color});
+   TaskCard({super.key, required this.status, required this.color, required this.title, required this.description, required this.createDate});
 
   final String status;
   final Color color;
+  final String title;
+  final String description;
+  final String createDate;
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +15,7 @@ class TaskCard extends StatelessWidget {
       padding: const EdgeInsets.all(10),
       child: ListTile(
         tileColor: Colors.white,
-        title: Text('Title of Task',
+        title: Text(title,
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -21,8 +24,8 @@ class TaskCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Description of Task'),
-            Text('Date of Task',
+            Text(description,),
+            Text('Created Date: $createDate',
               style: TextStyle(
                 color: Colors.black,
                 fontSize: 14,

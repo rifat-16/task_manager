@@ -16,7 +16,7 @@ class _CancelledTaskScreenState extends State<CancelledTaskScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView.builder(itemBuilder: (context, index){
-        return TaskCard(status: 'Cancelled', color: Colors.red,);
+        return;
       }),
     );
   }

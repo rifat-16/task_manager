@@ -16,7 +16,7 @@ class _CompletedTaskScreenState extends State<CompletedTaskScreen> {
       body: ListView.builder(
         itemCount: 10,
         itemBuilder: (context, index){
-          return TaskCard(status: 'Completed', color: Colors.green,);
+          return;
         }
       ),
     );

@@ -150,7 +150,6 @@ class _LoginScreenState extends State<LoginScreen> {
     if (response.isSuccess && response.responseData['status'] == 'success') {
       UserModel userModel = UserModel.fromJson(response.responseData['data']);
       String accessToken = response.responseData['token'];
-
       await AuthController.saveUserData(userModel, accessToken);
 
       showSnackBarMessage(context, 'Login Success', false);
