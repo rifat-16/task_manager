@@ -73,9 +73,11 @@ class ApiCaller {
       Uri uri = Uri.parse(url);
       _logRequest(url);
       Response response = await post(uri,
-          headers: {'Content-Type': 'application/json',
+        headers: {
+          'Content-Type': 'application/json',
+          if (AuthController.accessToken != null)
             'token': AuthController.accessToken!,
-          },
+        },
           body: jsonEncode(body),
 
       );

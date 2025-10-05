@@ -91,7 +91,8 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
       _loginInProgress = true;
     });
     Map<String, dynamic> body = {
-      "subject": _subjectTEController.text,
+      "status": "New",
+      "title": _subjectTEController.text,
       "description": _descriptionTEController.text,
     };
     final ApiResponse response = await ApiCaller.postRequest(
