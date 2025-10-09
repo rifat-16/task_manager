@@ -1,4 +1,4 @@
-class TaskList{
+class TaskModel{
 
   final String title;
   final String description;
@@ -7,7 +7,7 @@ class TaskList{
   final String createdDate;
   final String id;
 
-  TaskList({
+  TaskModel({
     required this.title,
     required this.description,
     required this.status,
@@ -16,8 +16,8 @@ class TaskList{
     required this.id,
   });
 
-  factory TaskList.fromJson(Map<String, dynamic> json) {
-    return TaskList(
+  factory TaskModel.fromJson(Map<String, dynamic> json) {
+    return TaskModel(
       id: json['_id'],
       title: json['title']??'',
       description: json['description'],
@@ -26,8 +26,4 @@ class TaskList{
       createdDate: json['createdDate'],
     );
   }
-
-
-
-
 }

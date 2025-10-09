@@ -54,7 +54,6 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                   ),
                   SizedBox(height: 20,),
                   FilledButton(onPressed: (){}, child: Icon(Icons.arrow_forward_ios))
-
                 ]
               ),
             ),

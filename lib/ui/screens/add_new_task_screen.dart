@@ -105,6 +105,9 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
     if (response.isSuccess && response.responseData['status'] == 'success') {
       showSnackBarMessage(context, 'Task Added Successfully', false);
       _clearTextFields();
+      Future.delayed(Duration(seconds: 1), () {
+        Navigator.pop(context);
+      });
     } else {
       showSnackBarMessage(
         context,

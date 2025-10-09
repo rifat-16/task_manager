@@ -22,14 +22,13 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
   @override
   void initState() {
     super.initState();
-    print(_taskStatusCountList);
     _getAllTaskStatusCount();
     _getTaskList();
   }
 
   bool _getTaskListInProgress = false;
   List<TaskStatusCount> _taskStatusCountList = [];
-  List<TaskList> _taskList = [];
+  List<TaskModel> _taskList = [];
 
   Future<void> _getAllTaskStatusCount() async {
     setState(() {
@@ -60,15 +59,15 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
       _getTaskListInProgress = true;
     });
     final ApiResponse response = await ApiCaller.getRequest(
-      url: Urls.taskListUrl,
+      url: Urls.newTaskUrl,
     );
     setState(() {
       _getTaskListInProgress = false;
     });
     if (response.isSuccess && response.responseData['status'] == 'success') {
-      List<TaskList> list = [];
+      List<TaskModel> list = [];
       for (Map<String, dynamic> jsonData in response.responseData['data']) {
-        list.add(TaskList.fromJson(jsonData));
+        list.add(TaskModel.fromJson(jsonData));
       }
       _taskList = list;
     } else {
@@ -79,33 +78,51 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          SizedBox(height: 90,
-            child: Visibility(
-              visible: _getTaskListInProgress == false,
-              replacement: CenteredProgressIndicator(),
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: _taskStatusCountList.length,
-                itemBuilder: (context, index) {
-                  return TaskCoundByStatus(
-                    title: _taskStatusCountList[index].status,
-                    count: _taskStatusCountList[index].count.toString(),
-                  );
-                },
+      body: RefreshIndicator(
+        onRefresh: (){
+          _getAllTaskStatusCount();
+          _getTaskList();
+          return Future.delayed(Duration(seconds: 1));
+        },
+        child: Column(
+          children: [
+            SizedBox(height: 90,
+              child: Visibility(
+                visible: _getTaskListInProgress == false,
+                replacement: CenteredProgressIndicator(),
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _taskStatusCountList.length,
+                  itemBuilder: (context, index) {
+                    return TaskCoundByStatus(
+                      title: _taskStatusCountList[index].status,
+                      count: _taskStatusCountList[index].count.toString(),
+                    );
+                  },
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _taskList.length,
-              itemBuilder: (context, index){
-                return TaskCard(title: _taskList[index].title, description: _taskList[index].description, color: Colors.blue, status: _taskList[index].status, createDate: _taskList[index].createdDate);
-              }
+            Expanded(
+              child: ListView.builder(
+                itemCount: _taskList.length,
+                itemBuilder: (context, index){
+                  return TaskCard(
+                      refreshParent: (){
+                        _getTaskList();
+                        _getAllTaskStatusCount();
+                      },
+                      title: _taskList[index].title,
+                      description: _taskList[index].description,
+                      color: Colors.blue,
+                      status: _taskList[index].status,
+                      taskModel: _taskList[index],
+                      createDate: _taskList[index].createdDate
+                  );
+                }
+              )
             )
-          )
-        ],
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _onTabFloatingActionButton,
