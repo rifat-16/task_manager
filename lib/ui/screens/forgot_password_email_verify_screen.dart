@@ -44,7 +44,13 @@ class _ForgotPasswordEmailVerifyState extends State<ForgotPasswordEmailVerify> {
                   SizedBox(height: 20),
                   TextFormField(
                       controller: _emailTEController,
-                      decoration: InputDecoration(hintText: 'Email')
+                      decoration: InputDecoration(hintText: 'Email'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Email is required';
+                        }
+                        return null;
+                      }
                   ),
                   SizedBox(height: 20),
                   FilledButton(
@@ -85,10 +91,12 @@ class _ForgotPasswordEmailVerifyState extends State<ForgotPasswordEmailVerify> {
   }
 
   void _onTabFilledButton(){
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (__) => PinVerifyScreen(),),
-    );
+    if (_formKey.currentState!.validate()) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (__) => PinVerifyScreen(),),
+      );
+    }
   }
 
   @override
