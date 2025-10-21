@@ -1,11 +1,15 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import '../../data/services/api_caller.dart';
+import '../../data/utils/urls.dart';
 import '../widgets/screen_background.dart';
 import 'login_screen.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
-  const ResetPasswordScreen({super.key});
+  final email;
+  final otp;
+  const ResetPasswordScreen({super.key, this.email, this.otp});
 
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
@@ -15,6 +19,35 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
   final _newPassTEController = TextEditingController();
   final _confirmPassTEController = TextEditingController();
+
+  Future<void> _setPassword() async {
+    if (_formKey.currentState!.validate()) {
+      if (_newPassTEController.text == _confirmPassTEController.text) {
+        final ApiResponse response = await ApiCaller.postRequest(
+          url: Urls.setNewPasswordUrl,
+          body: {
+            "email": widget.email,
+            "OTP": widget.otp,
+            "password": _newPassTEController.text,
+          },
+        );
+        if (response.isSuccess && response.responseData['status'] == 'success') {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (__) => LoginScreen()),
+            (route) => false,
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(response.errorMessage!),
+                backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +89,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                   SizedBox(height: 20),
                   FilledButton(
-                    onPressed: _onTabFilledButton,
+                    onPressed: _setPassword,
                     child: Icon(Icons.arrow_circle_right_outlined),
                   ),
                   SizedBox(height: 20),
@@ -91,7 +124,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         ),
       ),
     );
-
   }
 
   void _opTabLoginTextButton() {
@@ -101,8 +133,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       (route) => false,
     );
   }
-
-  void _onTabFilledButton() {}
 
 
   @override

@@ -15,7 +15,7 @@ class ApiCaller {
       _logRequest(url);
       Response response = await get(uri,
           headers: {'Content-Type': 'application/json',
-              'token': AuthController.accessToken!,
+              'token': ?AuthController.accessToken,
           },
       );
       _logResponse(response);
@@ -43,7 +43,7 @@ class ApiCaller {
           isSuccess: false,
           statusCode: statusCode,
           responseData: decodedData,
-          errorMessage: decodedData['message'],
+          errorMessage: decodedData['data']?? decodedData['status']??'Something went wrong',
         );
       }
     } on Exception catch (e) {

@@ -3,12 +3,16 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:task_manger/ui/screens/reset_password_screen.dart';
+import '../../data/services/api_caller.dart';
+import '../../data/utils/urls.dart';
 import '../widgets/screen_background.dart';
+import '../widgets/snack_bar_message.dart';
 import 'login_screen.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 class PinVerifyScreen extends StatefulWidget {
-  const PinVerifyScreen({super.key});
+  final email;
+  const PinVerifyScreen({super.key, required this.email});
 
   @override
   State<PinVerifyScreen> createState() => _PinVerifyScreenState();
@@ -17,6 +21,32 @@ class PinVerifyScreen extends StatefulWidget {
 class _PinVerifyScreenState extends State<PinVerifyScreen> {
   final _formKey = GlobalKey<FormState>();
   final _pinTEController = TextEditingController();
+  bool _loginInProgress = false;
+
+
+Future<void> _pinVerify() async{
+  setState(() {
+    _loginInProgress = true;
+  });
+  final ApiResponse response = await ApiCaller.getRequest(
+    url: Urls.resetPasswordOtpUrl(widget.email, _pinTEController.text),
+  );
+  if (response.isSuccess && response.responseData['status'] == 'success') {
+    showSnackBarMessage(context, 'Pin Verified Successfully', false);
+    _onTabFilledButton();
+    } else {
+    showSnackBarMessage(
+      context,
+      response.errorMessage!,
+      true,
+    );
+  }
+  setState(() {
+    _loginInProgress = false;
+  });
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -63,8 +93,11 @@ class _PinVerifyScreenState extends State<PinVerifyScreen> {
                   ),
                   SizedBox(height: 20),
                   FilledButton(
-                    onPressed: _onTabFilledButton,
-                    child: Icon(Icons.arrow_circle_right_outlined),
+                    onPressed: _pinVerify,
+                    child: Visibility(
+                        visible: _loginInProgress == false,
+                        replacement: Center(child: CircularProgressIndicator()),
+                        child: Icon(Icons.arrow_circle_right_outlined)),
                   ),
                   SizedBox(height: 20),
                   Center(
@@ -103,7 +136,7 @@ class _PinVerifyScreenState extends State<PinVerifyScreen> {
   void _onTabFilledButton(){
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (__) => ResetPasswordScreen(),),
+      MaterialPageRoute(builder: (__) => ResetPasswordScreen(email: widget.email, otp: _pinTEController.text),),
     );
   }
 
