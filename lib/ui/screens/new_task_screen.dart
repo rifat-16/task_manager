@@ -1,13 +1,8 @@
-
-
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:task_manger/ui/controller/new_task_provider.dart';
 import 'package:task_manger/ui/screens/add_new_task_screen.dart';
-import '../../data/models/task_model.dart';
-import '../../data/models/task_status_count.dart';
-import '../../data/services/api_caller.dart';
-import '../../data/utils/urls.dart';
 import '../widgets/centered_progress_indicator.dart';
-import '../widgets/snack_bar_message.dart';
 import '../widgets/task_card.dart';
 import '../widgets/task_count_by_status.dart';
 
@@ -19,84 +14,40 @@ class NewTaskScreen extends StatefulWidget {
 }
 
 class _NewTaskScreenState extends State<NewTaskScreen> {
+
   @override
   void initState() {
     super.initState();
-    _getAllTaskStatusCount();
-    _getTaskList();
-  }
-
-  bool _getTaskListInProgress = false;
-  List<TaskStatusCount> _taskStatusCountList = [];
-  List<TaskModel> _taskList = [];
-
-  Future<void> _getAllTaskStatusCount() async {
-    setState(() {
-      _getTaskListInProgress = true;
+    Future.microtask(() {
+      final provider = context.read<NewTaskProvide>();
+      provider.getAllTaskStatusCount();
+      provider.getTaskList();
     });
-    final ApiResponse response = await ApiCaller.getRequest(
-      url: Urls.taskStatusCountUrl,
-    );
-    setState(() {
-      _getTaskListInProgress = false;
-    });
-    if (response.isSuccess && response.responseData['status'] == 'success') {
-      List<TaskStatusCount> list = [];
-      for (Map<String, dynamic> jsonData in response.responseData['data']) {
-        list.add(TaskStatusCount.fromJson(jsonData));
-      }
-      _taskStatusCountList = list;
-    } else {
-      showSnackBarMessage(context, response.errorMessage!, true,);
-    }
-    setState(() {
-      _getTaskListInProgress = false;
-    });
-  }
-
-  Future<void> _getTaskList() async {
-    setState(() {
-      _getTaskListInProgress = true;
-    });
-    final ApiResponse response = await ApiCaller.getRequest(
-      url: Urls.newTaskUrl,
-    );
-    setState(() {
-      _getTaskListInProgress = false;
-    });
-    if (response.isSuccess && response.responseData['status'] == 'success') {
-      List<TaskModel> list = [];
-      for (Map<String, dynamic> jsonData in response.responseData['data']) {
-        list.add(TaskModel.fromJson(jsonData));
-      }
-      _taskList = list;
-    } else {
-      showSnackBarMessage(context, response.errorMessage!, true,);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final newTaskProvider = context.watch<NewTaskProvide>();
     return Scaffold(
       body: RefreshIndicator(
-        onRefresh: (){
-          _getAllTaskStatusCount();
-          _getTaskList();
-          return Future.delayed(Duration(seconds: 1));
+        onRefresh: () async {
+          await context.read<NewTaskProvide>().getAllTaskStatusCount();
+          await context.read<NewTaskProvide>().getTaskList();
         },
         child: Column(
           children: [
             SizedBox(height: 90,
               child: Visibility(
-                visible: _getTaskListInProgress == false,
+                visible: newTaskProvider.isLoading == false,
                 replacement: CenteredProgressIndicator(),
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  itemCount: _taskStatusCountList.length,
+                  itemCount: newTaskProvider.taskStatusCountList.length,
                   itemBuilder: (context, index) {
+                    final item = newTaskProvider.taskStatusCountList[index];
                     return TaskCoundByStatus(
-                      title: _taskStatusCountList[index].status,
-                      count: _taskStatusCountList[index].count.toString(),
+                      title: item.status,
+                      count: item.count.toString(),
                     );
                   },
                 ),
@@ -104,19 +55,20 @@ class _NewTaskScreenState extends State<NewTaskScreen> {
             ),
             Expanded(
               child: ListView.builder(
-                itemCount: _taskList.length,
+                itemCount: newTaskProvider.taskList.length,
                 itemBuilder: (context, index){
+                  final task = newTaskProvider.taskList[index];
                   return TaskCard(
                       refreshParent: (){
-                        _getTaskList();
-                        _getAllTaskStatusCount();
+                        newTaskProvider.getTaskList();
+                        newTaskProvider.getAllTaskStatusCount();
                       },
-                      title: _taskList[index].title,
-                      description: _taskList[index].description,
+                      title: task.title,
+                      description: task.description,
                       color: Colors.blue,
-                      status: _taskList[index].status,
-                      taskModel: _taskList[index],
-                      createDate: _taskList[index].createdDate
+                      status: task.status,
+                      taskModel: task,
+                      createDate: task.createdDate
                   );
                 }
               )

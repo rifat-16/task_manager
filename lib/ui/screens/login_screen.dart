@@ -1,11 +1,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:task_manger/data/services/api_caller.dart';
 import 'package:task_manger/data/utils/urls.dart';
 import 'package:task_manger/ui/screens/sing_up_screen.dart';
 import 'package:task_manger/ui/widgets/centered_progress_indicator.dart';
 import '../../data/models/user_model.dart';
 import '../controller/auth_cotroller.dart';
+import '../controller/login_provider.dart';
 import '../widgets/screen_background.dart';
 import '../widgets/snack_bar_message.dart';
 import 'forgot_password_email_verify_screen.dart';
@@ -22,91 +24,99 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailTEController = TextEditingController();
   final _passwordTEController = TextEditingController();
-  bool _loginInProgress = false;
+
+  final LoginProvider _loginProvider = LoginProvider();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: BackgroundScreen(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(30),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 100),
-                  Text(
-                    'Get Started With',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  SizedBox(height: 20),
-                  TextFormField(
-                    keyboardType: TextInputType.emailAddress,
-                    controller: _emailTEController,
-                    decoration: InputDecoration(hintText: 'Email'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty || !value.contains('@gmail.com')) {
-                        return 'Email is required';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 15),
-                  TextFormField(
-                    controller: _passwordTEController,
-                    obscureText: true,
-                    decoration: InputDecoration(hintText: 'Password'),
-                    validator: (value) {
-                      if (value == null || value.isEmpty || value.length < 6) {
-                        return 'Password is required';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 20),
-                  Visibility(
-                    visible: _loginInProgress == false,
-                    replacement: CenteredProgressIndicator(),
-                    child: FilledButton(
-                      onPressed: _onTabFilledButton,
-                      child: Icon(Icons.arrow_circle_right_outlined),
+    return ChangeNotifierProvider(
+      create: (_) => _loginProvider,
+      child: Scaffold(
+        body: BackgroundScreen(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(30),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 100),
+                    Text(
+                      'Get Started With',
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
-                  ),
-                  SizedBox(height: 20),
-                  Center(
-                    child: Column(
-                      children: [
-                        TextButton(
-                          onPressed: _onTabForgotPasswordButton,
-                          child: Text(
-                            'Forgot Password?',
-                            style: TextStyle(color: Colors.grey),
+                    SizedBox(height: 20),
+                    TextFormField(
+                      keyboardType: TextInputType.emailAddress,
+                      controller: _emailTEController,
+                      decoration: InputDecoration(hintText: 'Email'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty || !value.contains('@gmail.com')) {
+                          return 'Email is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 15),
+                    TextFormField(
+                      controller: _passwordTEController,
+                      obscureText: true,
+                      decoration: InputDecoration(hintText: 'Password'),
+                      validator: (value) {
+                        if (value == null || value.isEmpty || value.length < 6) {
+                          return 'Password is required';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 20),
+                    Consumer<LoginProvider>(
+                      builder: (context, loginProvider, _) {
+                        return Visibility(
+                          visible: loginProvider.isLoading == false,
+                          replacement: CenteredProgressIndicator(),
+                          child: FilledButton(
+                            onPressed: _onTabFilledButton,
+                            child: Icon(Icons.arrow_circle_right_outlined),
                           ),
-                        ),
-                        RichText(
-                          text: TextSpan(
-                            text: 'Don\'t have an account? ',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
+                        );
+                      }
+                    ),
+                    SizedBox(height: 20),
+                    Center(
+                      child: Column(
+                        children: [
+                          TextButton(
+                            onPressed: _onTabForgotPasswordButton,
+                            child: Text(
+                              'Forgot Password?',
+                              style: TextStyle(color: Colors.grey),
                             ),
-                            children: [
-                              TextSpan(
-                                text: 'Sign Up',
-                                style: TextStyle(color: Colors.green),
-                                recognizer: TapGestureRecognizer()
-                                  ..onTap = _onTabSingUpTextButton,
-                              ),
-                            ],
                           ),
-                        ),
-                      ],
+                          RichText(
+                            text: TextSpan(
+                              text: 'Don\'t have an account? ',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              children: [
+                                TextSpan(
+                                  text: 'Sign Up',
+                                  style: TextStyle(color: Colors.green),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = _onTabSingUpTextButton,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -133,35 +143,19 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
-    setState(() {
-      _loginInProgress = true;
-    });
-    Map<String, dynamic> body = {
-      "email": _emailTEController.text,
-      "password": _passwordTEController.text,
-    };
-    final ApiResponse response = await ApiCaller.postRequest(
-      url: Urls.loginUrl,
-      body: body,
+    final bool isSuccess = await _loginProvider.login(
+      _emailTEController.text.trim(),
+      _passwordTEController.text,
     );
-    setState(() {
-      _loginInProgress = false;
-    });
-    if (response.isSuccess && response.responseData['status'] == 'success') {
-      UserModel userModel = UserModel.fromJson(response.responseData['data']);
-      String accessToken = response.responseData['token'];
-      await AuthController.saveUserData(userModel, accessToken);
-
-      showSnackBarMessage(context, 'Login Success', false);
-      Future.delayed(Duration(seconds: 1), () {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (__) => MainNavBerHolderScreen()),
-              (route) => false,
-        );
-      });
-    } else {
-      showSnackBarMessage(context, response.errorMessage!, true);
+    if (isSuccess) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (__) => MainNavBerHolderScreen()),
+        (route) => false,
+      );
+    }
+    else {
+      showSnackBarMessage(context, _loginProvider.errorMessage!, true);
     }
   }
 
