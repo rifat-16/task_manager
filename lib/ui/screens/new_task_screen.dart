@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:task_manger/ui/controller/new_task_provider.dart';
+import 'package:task_manger/ui/provider/new_task_provider.dart';
 import 'package:task_manger/ui/screens/add_new_task_screen.dart';
 import '../widgets/centered_progress_indicator.dart';
 import '../widgets/task_card.dart';

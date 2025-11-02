@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:task_manger/ui/controller/new_task_provider.dart';
+import 'package:task_manger/ui/controller/auth_cotroller.dart';
+import 'package:task_manger/ui/provider/cancelled_task_provider.dart';
+import 'package:task_manger/ui/provider/completed_task_provider.dart';
+import 'package:task_manger/ui/provider/inprogress_task_provider.dart';
+import 'package:task_manger/ui/provider/new_task_provider.dart';
+import 'package:task_manger/ui/provider/update_profile_provider.dart';
 import 'package:task_manger/ui/screens/splash_screen.dart';
 
 
@@ -13,7 +18,12 @@ class TaskManagerApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_)=> NewTaskProvide())
+        ChangeNotifierProvider(create: (_)=> NewTaskProvide()),
+        ChangeNotifierProvider(create: (_)=> InprogressTaskProvider()),
+        ChangeNotifierProvider(create: (_)=> CompletedTaskProvider()),
+        ChangeNotifierProvider(create: (_)=> CancelledTaskProvider()),
+        ChangeNotifierProvider(create: (_)=> UpdateProfileProvider()),
+        ChangeNotifierProvider(create: (_)=> AuthController()),
       ],
       child: MaterialApp(
         navigatorKey: navigatorKey,

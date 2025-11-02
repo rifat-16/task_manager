@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:task_manger/data/models/user_model.dart';
 import 'package:task_manger/ui/widgets/photo_picker_field.dart';
 import 'package:task_manger/ui/widgets/screen_background.dart';
-import '../../data/services/api_caller.dart';
-import '../../data/utils/urls.dart';
 import '../controller/auth_cotroller.dart';
+import '../provider/update_profile_provider.dart';
 import '../widgets/snack_bar_message.dart';
 import '../widgets/tm_app_bar.dart';
 
@@ -23,7 +23,6 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   final TextEditingController _mobileTEController = TextEditingController();
   final TextEditingController _passwordTEController = TextEditingController();
 
-  bool _updateProfileInProgress = false;
 
   @override
   void initState() {
@@ -117,7 +116,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                     FilledButton(
                       onPressed: _updateProfile,
                       child: Visibility(
-                        visible: _updateProfileInProgress == false,
+                        visible: context.watch<UpdateProfileProvider>().isLoading == false,
                         replacement: CircularProgressIndicator(),
                         child: Icon(Icons.arrow_forward_ios),
                       ),
@@ -134,36 +133,18 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
 
   Future<void> _updateProfile() async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _updateProfileInProgress = true;
-      });
-      Map<String, dynamic> body = {
-        "email": _emailTEController.text,
-        "firstName": _firstNameTEController.text,
-        "lastName": _lastNameTEController.text,
-        "mobile": _mobileTEController.text,
-      };
-      if (_passwordTEController.text.isNotEmpty) {
-        body['password'] = _passwordTEController.text;
-      }
-      final ApiResponse response = await ApiCaller.postRequest(
-        url: Urls.updateProfileUrl,
-        body: body,
+      context.read<UpdateProfileProvider>().updateProfile(
+        _emailTEController.text.trim(),
+        _firstNameTEController.text.trim(),
+          _lastNameTEController.text.trim(),
+        _mobileTEController.text.trim(),
+        _passwordTEController.text.trim(),
       );
-      setState(() {
-        _updateProfileInProgress = false;
-      });
-      if (response.isSuccess && response.responseData['status'] == 'success') {
-        UserModel model = UserModel(
-          id: AuthController.userModel!.id,
-          email: _emailTEController.text,
-          firstname: _firstNameTEController.text,
-          lastname: _lastNameTEController.text,
-          mobile: _mobileTEController.text,
-        );
-        AuthController.saveUserData(model, AuthController.accessToken!);
-        showSnackBarMessage(context, 'Profile Updated Successfully', false);
-      }
+
+      showSnackBarMessage(context, 'Profile Updated Successfully', false);
+    }
+    else {
+      showSnackBarMessage(context, 'Please fill all required fields', true);
     }
   }
 

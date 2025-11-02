@@ -7,7 +7,7 @@ import 'package:task_manger/ui/screens/sing_up_screen.dart';
 import 'package:task_manger/ui/widgets/centered_progress_indicator.dart';
 import '../../data/models/user_model.dart';
 import '../controller/auth_cotroller.dart';
-import '../controller/login_provider.dart';
+import '../provider/login_provider.dart';
 import '../widgets/screen_background.dart';
 import '../widgets/snack_bar_message.dart';
 import 'forgot_password_email_verify_screen.dart';

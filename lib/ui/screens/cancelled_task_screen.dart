@@ -1,12 +1,7 @@
-
-
 import 'package:flutter/material.dart';
-
-import '../../data/models/task_model.dart';
-import '../../data/services/api_caller.dart';
-import '../../data/utils/urls.dart';
+import 'package:provider/provider.dart';
+import '../provider/cancelled_task_provider.dart';
 import '../widgets/centered_progress_indicator.dart';
-import '../widgets/snack_bar_message.dart';
 import '../widgets/task_card.dart';
 
 class CancelledTaskScreen extends StatefulWidget {
@@ -20,53 +15,29 @@ class _CancelledTaskScreenState extends State<CancelledTaskScreen> {
   @override
   void initState() {
     super.initState();
-    _getTaskList();
-  }
-
-
-  bool _getTaskListInProgress = false;
-
-  List<TaskModel> _taskList = [];
-
-  Future<void> _getTaskList() async {
-    setState(() {
-      _getTaskListInProgress = true;
+    Future.microtask(() {
+      context.read<CancelledTaskProvider>().getTaskList();
     });
-    final ApiResponse response = await ApiCaller.getRequest(
-      url: Urls.cancelledTaskUrl,
-    );
-    setState(() {
-      _getTaskListInProgress = false;
-    });
-    if (response.isSuccess && response.responseData['status'] == 'success') {
-      List<TaskModel> list = [];
-      for (Map<String, dynamic> jsonData in response.responseData['data']) {
-        list.add(TaskModel.fromJson(jsonData));
-      }
-      _taskList = list;
-    } else {
-      showSnackBarMessage(context, response.errorMessage!, true,);
-    }
   }
-
 
   @override
   Widget build(BuildContext context) {
+    final _cancelledTaskProvider = context.watch<CancelledTaskProvider>();
     return Scaffold(
       body: Visibility(
-        visible: _getTaskListInProgress == false,
+        visible: _cancelledTaskProvider.isLoading == false,
         replacement: CenteredProgressIndicator(),
         child: ListView.builder(
-            itemCount: _taskList.length,
+            itemCount: _cancelledTaskProvider.taskList.length,
             itemBuilder: (context, index){
               return TaskCard(
-                  refreshParent: _getTaskList,
-                  title: _taskList[index].title,
-                  description: _taskList[index].description,
+                  refreshParent: _cancelledTaskProvider.getTaskList,
+                  title: _cancelledTaskProvider.taskList[index].title,
+                  description: _cancelledTaskProvider.taskList[index].description,
                   color: Colors.orange,
-                  status: _taskList[index].status,
-                  taskModel: _taskList[index],
-                  createDate: _taskList[index].createdDate
+                  status: _cancelledTaskProvider.taskList[index].status,
+                  taskModel: _cancelledTaskProvider.taskList[index],
+                  createDate: _cancelledTaskProvider.taskList[index].createdDate
               );
             }
         ),

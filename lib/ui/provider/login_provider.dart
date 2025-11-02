@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../data/models/user_model.dart';
 import '../../data/services/api_caller.dart';
 import '../../data/utils/urls.dart';
-import 'auth_cotroller.dart';
+import '../controller/auth_cotroller.dart';
 
 class LoginProvider extends ChangeNotifier {
   bool _isLoading = false;

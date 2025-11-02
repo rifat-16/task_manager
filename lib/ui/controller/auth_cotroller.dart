@@ -1,15 +1,22 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../data/models/user_model.dart';
 
-class AuthController{
+class AuthController extends ChangeNotifier{
   static const String _tokenKey = 'token';
   static const String _userKey = 'user';
 
   static String? accessToken;
   static UserModel? userModel;
+
+  static AuthController? _instance;
+
+  AuthController() {
+    _instance = this;
+  }
 
   static Future<void> saveUserData(UserModel model, String token) async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
@@ -17,6 +24,7 @@ class AuthController{
     await sharedPreferences.setString(_userKey, jsonEncode(model.toJson()));
     accessToken = token;
     userModel = model;
+    _instance?.notifyListeners();
   }
 
   static Future<void> getUserData() async {
@@ -30,7 +38,6 @@ class AuthController{
   }
 
 
-
   static Future<bool> isUserAlreadyLoggedIn() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? token = sharedPreferences.getString(_tokenKey);
@@ -40,5 +47,6 @@ class AuthController{
   static Future<void> clearUserData() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     await sharedPreferences.clear();
+    _instance?.notifyListeners();
   }
 }

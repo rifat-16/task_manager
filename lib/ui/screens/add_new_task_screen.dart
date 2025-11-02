@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:task_manger/ui/controller/add_new_task_provider.dart';
+import 'package:task_manger/ui/provider/add_new_task_provider.dart';
 import 'package:task_manger/ui/widgets/screen_background.dart';
 import 'package:task_manger/ui/widgets/tm_app_bar.dart';
-import '../controller/new_task_provider.dart';
+import '../provider/new_task_provider.dart';
 import '../widgets/centered_progress_indicator.dart';
 import '../widgets/snack_bar_message.dart';
 
@@ -103,7 +103,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
       context.read<NewTaskProvide>().getAllTaskStatusCount();
       showSnackBarMessage(context, 'Task Add Successfully', false);
       _clearTextFields();
-      Future.delayed(Duration(seconds: 1));
+      Future.delayed(Duration(seconds: 2));
       Navigator.pop(context);
     }
     else{
