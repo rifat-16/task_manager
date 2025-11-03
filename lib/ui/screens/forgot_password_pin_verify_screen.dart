@@ -1,17 +1,15 @@
-
-
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:task_manger/ui/screens/reset_password_screen.dart';
-import '../../data/services/api_caller.dart';
-import '../../data/utils/urls.dart';
+import 'package:provider/provider.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
+import 'login_screen.dart';
+import 'reset_password_screen.dart';
+import '../provider/pin_verify_provider.dart';
 import '../widgets/screen_background.dart';
 import '../widgets/snack_bar_message.dart';
-import 'login_screen.dart';
-import 'package:pin_code_fields/pin_code_fields.dart';
 
 class PinVerifyScreen extends StatefulWidget {
-  final email;
+  final String email;
   const PinVerifyScreen({super.key, required this.email});
 
   @override
@@ -20,107 +18,129 @@ class PinVerifyScreen extends StatefulWidget {
 
 class _PinVerifyScreenState extends State<PinVerifyScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _pinTEController = TextEditingController();
-  bool _loginInProgress = false;
+  final _pinController = TextEditingController();
 
+  Future<void> _pinVerify() async {
+    final provider = context.read<PinVerifyProvider>();
+    bool isSuccess = await provider.pinVerify(widget.email, _pinController.text);
 
-Future<void> _pinVerify() async{
-  setState(() {
-    _loginInProgress = true;
-  });
-  final ApiResponse response = await ApiCaller.getRequest(
-    url: Urls.resetPasswordOtpUrl(widget.email, _pinTEController.text),
-  );
-  if (response.isSuccess && response.responseData['status'] == 'success') {
-    showSnackBarMessage(context, 'Pin Verified Successfully', false);
-    _onTabFilledButton();
+    if (isSuccess) {
+      showSnackBarMessage(context, 'Pin Verified Successfully', false);
+      _goToResetPassword();
     } else {
-    showSnackBarMessage(
+      showSnackBarMessage(context, provider.errorMessage ?? 'Error', true);
+    }
+  }
+
+  void _goToResetPassword() {
+    Navigator.pushReplacement(
       context,
-      response.errorMessage!,
-      true,
+      MaterialPageRoute(
+        builder: (_) => ResetPasswordScreen(
+          email: widget.email,
+          otp: _pinController.text,
+        ),
+      ),
     );
   }
-  setState(() {
-    _loginInProgress = false;
-  });
-}
 
+  void _goToLogin() {
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => LoginScreen()),
+          (route) => false,
+    );
+  }
 
+  @override
+  void dispose() {
+    _pinController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: BackgroundScreen(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(30),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(height: 100),
-                  Text(
-                    'Pin Verification',
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  SizedBox(height: 10),
-                  Text('A 6-digit code has been sent to your email',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 15,
-                      fontWeight: FontWeight.w400,
+    return ChangeNotifierProvider(
+      create: (_) => PinVerifyProvider(),
+      builder: (context, child) => Scaffold(
+        body: BackgroundScreen(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(30),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 100),
+                    Text(
+                      'Pin Verification',
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
-                  ),
-                  SizedBox(height: 20),
-                  PinCodeTextField(
-                    length: 6,
-                    obscureText: false,
-                    animationType: AnimationType.fade,
-                    keyboardType: TextInputType.number,
-                    pinTheme: PinTheme(
-                      shape: PinCodeFieldShape.box,
-                      borderRadius: BorderRadius.circular(5),
-                      fieldHeight: 50,
-                      fieldWidth: 40,
-                      activeFillColor: Colors.white,
+                    SizedBox(height: 10),
+                    Text(
+                      'A 6-digit code has been sent to your email',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
-                    animationDuration: Duration(milliseconds: 300),
-                    backgroundColor: Colors.transparent,
-                    controller: _pinTEController,
-                    appContext: context,
-                  ),
-                  SizedBox(height: 20),
-                  FilledButton(
-                    onPressed: _pinVerify,
-                    child: Visibility(
-                        visible: _loginInProgress == false,
-                        replacement: Center(child: CircularProgressIndicator()),
-                        child: Icon(Icons.arrow_circle_right_outlined)),
-                  ),
-                  SizedBox(height: 20),
-                  Center(
-                    child: Column(
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                            text: 'have an account? ',
-                            style: TextStyle(color: Colors.black, fontSize: 15,
-                              fontWeight: FontWeight.bold,),
-                            children: [
-                              TextSpan(
-                                text: 'Login',
-                                style: TextStyle(color: Colors.green),
-                                recognizer: TapGestureRecognizer()..onTap = _opTabLoginTextButton,
-                              )
-                            ],
-                          ),
+                    SizedBox(height: 20),
+                    PinCodeTextField(
+                      length: 6,
+                      obscureText: false,
+                      keyboardType: TextInputType.number,
+                      animationType: AnimationType.fade,
+                      pinTheme: PinTheme(
+                        shape: PinCodeFieldShape.box,
+                        borderRadius: BorderRadius.circular(5),
+                        fieldHeight: 50,
+                        fieldWidth: 40,
+                        activeFillColor: Colors.white,
+                      ),
+                      animationDuration: Duration(milliseconds: 300),
+                      backgroundColor: Colors.transparent,
+                      controller: _pinController,
+                      appContext: context,
+                    ),
+                    SizedBox(height: 20),
+                    Consumer<PinVerifyProvider>(
+                      builder: (context, provider, _) {
+                        return FilledButton(
+                          onPressed: () => _pinVerify(),
+                          child: provider.isLoading
+                              ? SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                              : Icon(Icons.arrow_circle_right_outlined),
+                        );
+                      }
+                    ),
+                    SizedBox(height: 20),
+                    Center(
+                      child: RichText(
+                        text: TextSpan(
+                          text: 'Have an account? ',
+                          style: TextStyle(
+                              color: Colors.black,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold),
+                          children: [
+                            TextSpan(
+                              text: 'Login',
+                              style: TextStyle(color: Colors.green),
+                              recognizer: TapGestureRecognizer()
+                                ..onTap = _goToLogin,
+                            ),
+                          ],
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -128,23 +148,4 @@ Future<void> _pinVerify() async{
       ),
     );
   }
-  void _opTabLoginTextButton(){
-    Navigator.pushAndRemoveUntil(context,
-        MaterialPageRoute(builder: (__) => LoginScreen()), (route) => false);
-  }
-
-  void _onTabFilledButton(){
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (__) => ResetPasswordScreen(email: widget.email, otp: _pinTEController.text),),
-    );
-  }
-
-
-  @override
-  void dispose() {
-    _pinTEController.dispose();
-    super.dispose();
-  }
-
 }

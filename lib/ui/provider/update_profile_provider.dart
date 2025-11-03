@@ -13,8 +13,14 @@ class UpdateProfileProvider extends ChangeNotifier {
 
   String? get errorMessage => _errorMessage;
 
-  Future<void> updateProfile(String email, String firstName, String lastName,
-      String mobile, String password) async {
+  Future<bool> updateProfile(
+    String email,
+    String firstName,
+    String lastName,
+    String mobile,
+    String password,
+  ) async {
+    bool isSuccess = false;
     _isLoading = true;
     notifyListeners();
     Map<String, dynamic> body = {
@@ -26,29 +32,26 @@ class UpdateProfileProvider extends ChangeNotifier {
     if (password.isNotEmpty) {
       body['password'] = password;
     }
-    try {
-      final ApiResponse response = await ApiCaller.postRequest(
-        url: Urls.updateProfileUrl,
-        body: body,
+    final ApiResponse response = await ApiCaller.postRequest(
+      url: Urls.updateProfileUrl,
+      body: body,
+    );
+    if (response.isSuccess && response.responseData['status'] == 'success') {
+      UserModel model = UserModel(
+        id: AuthController.userModel!.id,
+        email: email,
+        firstname: firstName,
+        lastname: lastName,
+        mobile: mobile,
       );
-      if (response.isSuccess && response.responseData['status'] == 'success') {
-        UserModel model = UserModel(
-          id: AuthController.userModel!.id,
-          email: email,
-          firstname: firstName,
-          lastname: lastName,
-          mobile: mobile,
-        );
-        AuthController.saveUserData(model, AuthController.accessToken!);
-        _errorMessage = null;
-      }
-      else {
-        _errorMessage = response.errorMessage ?? 'Something went wrong!';
-      }
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _errorMessage = e.toString();
+      AuthController.saveUserData(model, AuthController.accessToken!);
+      _errorMessage = null;
+      isSuccess = true;
+    } else {
+      _errorMessage = response.errorMessage ?? 'Something went wrong!';
     }
+    _isLoading = false;
+    notifyListeners();
+    return isSuccess;
   }
 }

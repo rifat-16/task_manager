@@ -103,7 +103,6 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
       context.read<NewTaskProvide>().getAllTaskStatusCount();
       showSnackBarMessage(context, 'Task Add Successfully', false);
       _clearTextFields();
-      Future.delayed(Duration(seconds: 2));
       Navigator.pop(context);
     }
     else{

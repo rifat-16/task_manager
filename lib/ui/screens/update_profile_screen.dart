@@ -140,7 +140,6 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         _mobileTEController.text.trim(),
         _passwordTEController.text.trim(),
       );
-
       showSnackBarMessage(context, 'Profile Updated Successfully', false);
     }
     else {

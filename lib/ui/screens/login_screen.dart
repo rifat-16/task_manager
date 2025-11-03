@@ -1,12 +1,8 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:task_manger/data/services/api_caller.dart';
-import 'package:task_manger/data/utils/urls.dart';
-import 'package:task_manger/ui/screens/sing_up_screen.dart';
+import 'package:task_manger/ui/screens/sign_up_screen.dart';
 import 'package:task_manger/ui/widgets/centered_progress_indicator.dart';
-import '../../data/models/user_model.dart';
-import '../controller/auth_cotroller.dart';
 import '../provider/login_provider.dart';
 import '../widgets/screen_background.dart';
 import '../widgets/snack_bar_message.dart';
@@ -127,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _onTabSingUpTextButton() {
     Navigator.push(
         context,
-        MaterialPageRoute(builder: (__) => SingupScreen()));
+        MaterialPageRoute(builder: (__) => SignUpScreen()));
   }
 
   void _onTabForgotPasswordButton() {
